@@ -1,0 +1,27 @@
+FREMGANGSPLAN FOR AI PÅ RASPBERRY PI PICO
+
+   - Forbered datasettet:
+	 Etter å ha hentet inn og lagret bildene i separate mapper,
+	 bør datasettet deles inn i trening, validering og testsett.
+	 Man kan bruke for eksempel 80% av bildene for trening, 10% for validering og 10% for testing.
+
+   - Forhåndsbehandle bildene:
+     	Før modellen skal trenes, bør bildene forhåndsbehandles ved å endre størrelsen slik at de alle har samme dimensjoner,
+	og normalisere pikselverdiene.
+
+   - Opprett og tren en modell:
+     	Kan nå opprette en modell ved hjelp av TensorFlow.
+	Akritekturer: CNN (Convolutional Neural Network) ?
+
+   - Evaluer modellen:
+     	Etter at modellen er trent, bør det evalueres på testsettet for å se hvor godt den presterer.
+	Man kan måle nøyaktighet, presisjon, gjenskalling og F1-score for å få en helhetlig forståelse av modellens ytelse.
+
+   - Konverter modellen:
+	Konverter modellen til TensorFlow Lite-format ved hjelp av tf.lite.TFLiteConverter.
+	Dette vil gjøre det mulig å bruke modellen på Raspberry Pi Pico.
+
+   - Eksporter og implementer modellen:
+        Til slutt kan man eksportere modellen og bruke den på Raspberry Pi Pico ved hjelp av TensorFlow Lite Micro.
+	Skrive kode for Raspberry Pi Pico for å hente inn bilder fra minnet,
+	forhåndsbehandle dem og kjøre modellen for å få en prediksjon.
