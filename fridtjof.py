@@ -1,3 +1,7 @@
+"""
+    Forberede dataset til treining og validering. Forhondsbehandling av bildene.   
+""" 
+
 import os
 import numpy as np
 from PIL import Image
@@ -48,3 +52,40 @@ X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=0.5, r
 print("Training set size:", len(X_train))
 print("Validation set size:", len(X_val))
 print("Testing set size:", len(X_test))
+
+"""
+    Generering og kompilering av modellen
+""" 
+
+# En enkel Convolutional Neural Network (CNN) arkitektur
+
+import tensorflow as tf
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)), 
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+    tf.keras.layers.MaxPooling2D(2, 2),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dense(1, activation='sigmoid')
+])
+# Lag 1: (32) lav filtere for å lære lavnivåmønster og teksturer. 
+#   (3,3) Vanlig for konvolusjonskjerner balansert. ReLU populær og rask aktiveringsfunksjon.
+# Lag 2,4,6: (2,2) Standard max-pooling-operasjoner. Reduseres dimensjonene til bildet med faktor 2.
+# Lag 3,5: (64)(128) Øker filter for å la nettverket lære mer sammensatte funksjoner og mønster.
+# Lag 7: Flatten, konverterer 2D-matrisen til 1D-vektor, nødvendig for fullt tilkoblet lag (Dense).
+# Lag 8: (128) Vilkårlig valg av noder, kan justeres. ReLU samme som sist.
+# Lag 9: (0.5) God balanse. 50% av nodene vil tilfeldig bli slått av under rening. Motarbeider overtilpasning.
+# Lag 10: (1) 1 node siden binært klassifiseringsproblem (bil, ikke bil). 
+#   Sigmoid gir kontinuerlig resultat mellom 0 og 1, som kan tolkes som sannsynlighetn for den positive klasse.
+
+model.summary()
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# Optimizer: Adam er populær og effektiv. Kombinerer RMSProp og AdaGrad.
+# Loss: binary_crossentropy vanlig for binær klassifisering. 
+#   Kvantifiserer forskjellen mellom de faktske etikettene og modellens prediksjoner.
+# Metrics: accuracy andelen av riktig klassifiserte bilder i forhold til totalt antall bilder.
