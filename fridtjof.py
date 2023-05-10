@@ -24,25 +24,25 @@ NO_CAR_IMAGES_DIR = os.path.join(IMAGES_DIR, "no_car")
 
 # Forbered data og etiketter
 X = []
-y = []
+Y = []
 
 # Henter og forhåndsbehandler bildene med biler
 for file_name in os.listdir(CAR_IMAGES_DIR):
     image_path = os.path.join(CAR_IMAGES_DIR, file_name)
     img_array = preprocess_image(image_path)
     X.append(img_array)
-    y.append(1)  # Legger til etiketten 1 for biler
+    Y.append(1)  # Legger til etiketten 1 for biler
 
 # Henter og forhåndsbehandler bildene uten biler
 for file_name in os.listdir(NO_CAR_IMAGES_DIR):
     image_path = os.path.join(NO_CAR_IMAGES_DIR, file_name)
     img_array = preprocess_image(image_path)
     X.append(img_array)
-    y.append(0)  # Legger til etiketten 0 for ikke-biler
+    Y.append(0)  # Legger til etiketten 0 for ikke-biler
 
 # Konverterer listene til numpy-arrays
 X = np.array(X)
-y = np.array(y)
+Y = np.array(Y)
 
 # Deler datasettet i trening og validering. 20% til valideringssett. Setter seed=42 for evt recreation.
 # X inneholder bilder, y inneholder tilhørende etikett (1 for bil, 0 for ikke bil)
@@ -89,3 +89,45 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 # Loss: binary_crossentropy vanlig for binær klassifisering. 
 #   Kvantifiserer forskjellen mellom de faktske etikettene og modellens prediksjoner.
 # Metrics: accuracy andelen av riktig klassifiserte bilder i forhold til totalt antall bilder.
+
+
+"""
+    Evaluering og konvertering
+"""
+
+datagen = tf.keras.preprocessing.image.ImageDataGenerator(
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+    )
+
+datagen.fit(X_train)
+history = model.fit(datagen.flow(X_train, Y_train, batch_size=32), 
+                    epochs=20, 
+                    validation_data=(X_val, Y_val))
+# X_train og y_train: inneholder forhåndsbehandlet bilder og tilsvarende etiketter.
+# epochs: Antall gjennomganger av datasettet. Fin balanse mellom underjustering og overjustering.
+# batch_size: Antall bilder som behandles samtidig før modellen oppdateres. 
+#   Mindre, raskere konvergens men høyere risiko for overjustering. Større, mer stabil med mer tid og minne.
+# validation_data: X_val og y_val inneholder forhåndsbehandlede bilder og tilvarende etiketter for valederingssettet. 
+#   Evaluerer modellens ytelse under trening, justerer for å unngå overjustering.
+
+from sklearn.metrics import classification_report
+
+test_loss, test_accuracy = model.evaluate(X_test, Y_test)
+print("Test loss:", test_loss)
+print("Test accuracy:", test_accuracy)
+
+Y_pred = model.predict(X_test)
+Y_pred = np.round((Y_pred).flatten().astype(int))
+
+print(classification_report(Y_test, Y_pred))
+
+
+#Konvertering til TFLite modell
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()
+open("model.tflite", "wb").write(tflite_model)
